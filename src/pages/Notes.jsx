@@ -1,13 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import NoteItem from "../components/NoteItem";
 import { Link } from "react-router-dom";
 import { BsPlusCircleFill } from "react-icons/bs";
 import { useState } from "react";
+import { MdClose } from "react-icons/md";
 
 const Notes = ({ notes }) => {
   const [text, setText] = useState("");
+  const ref = useRef();
   const [filteredNotes, setFilteredNotes] = useState(notes);
+  const [search, setSearch] = useState(false);
 
   const handleSearchChange = (e) => {
     setFilteredNotes(
@@ -19,23 +22,46 @@ const Notes = ({ notes }) => {
 
   useEffect(handleSearchChange, [text]);
 
+  const handleSearch = () => {
+    setSearch((prevState) => !prevState);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setSearch(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside, true);
+    return () => {
+      document.removeEventListener("click", handleClickOutside, true);
+    };
+  }, [ref]);
+
   return (
-    <div className="flex flex-col md:mx-auto max-w-screen-md min-h-screen py-5 md:px-32 bg-gradient-to-br from-zinc-800 to-zinc-500">
+    <div
+      ref={ref}
+      className="flex flex-col md:mx-auto max-w-screen-md min-h-screen py-5 md:px-32 bg-gradient-to-br from-zinc-800 to-zinc-500"
+    >
       <header className="flex flex-row items-center justify-around md:gap-30">
-        <h2 className="text-3xl md:text-2xl text-yellow-50">My Notes</h2>
+        {!search && <h2 className="text-3xl md:text-2xl text-yellow-50">My Notes</h2>}
         <div className="flex flex-row items-center gap-2">
-          <input
-            className="focus:outline-none capitalize placeholder:lowercase text-lg rounded md:text-md p-1"
-            type="text"
-            placeholder="Search your notes..."
-            autoFocus
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              handleSearchChange();
-            }}
-          />
-          <AiOutlineSearch size={28} className="text-yellow-50 font-bold cursor-pointer" />
+          {search && (
+            <input
+              className="focus:outline-none capitalize placeholder:lowercase text-lg rounded md:text-md p-1"
+              type="text"
+              placeholder="Search your notes..."
+              autoFocus
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value);
+                handleSearchChange();
+              }}
+            />
+          )}
+          <button onClick={handleSearch} className="btntext-yellow-50 font-bold cursor-pointer">
+            {search ? <MdClose /> : <AiOutlineSearch />}
+          </button>
         </div>
       </header>
       <div className="flex flex-col">
